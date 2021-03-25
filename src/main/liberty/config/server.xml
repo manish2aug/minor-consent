@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server description="${project.name}">
+
+    <featureManager>
+        <feature>jaxrs-2.1</feature>
+        <feature>mpMetrics-2.3</feature>
+        <feature>mpHealth-2.2</feature>
+        <feature>mpJwt-1.1</feature>
+        <feature>beanValidation-2.0</feature>
+        <feature>jdbc-4.2</feature>
+        <feature>concurrent-1.0</feature>
+        <feature>jsonb-1.0</feature>
+        <feature>mpOpenAPI-1.0</feature>
+    </featureManager>
+
+    <httpEndpoint id="defaultHttpEndpoint" httpPort="${server.httpPort}" httpsPort="${server.httpsPort}" host="*"/>
+
+    <webApplication location="${project.name}.war" contextRoot="/">
+        <classloader apiTypeVisibility="+third-party" />
+    </webApplication>
+
+    <managedExecutorService jndiName="concurrent/execSvc"/>
+
+    <mpMetrics authentication="false"/>
+
+    <keyStore id="defaultKeyStore" location="public.jks" type="JKS" password="atbash" />
+
+    <library id="DB2JCC4Lib">
+        <file name="resources/postgresql-42.2.18.jar"/>
+    </library>
+    <dataSource id="consentDS" jndiName="jdbc/consentApiDs">
+        <jdbcDriver libraryRef="DB2JCC4Lib"/>
+        <properties.postgresql databaseName="mrt_consent" serverName="localhost" portNumber="5432" user="postgres"
+                               password="password"/>
+    </dataSource>
+
+    <mpJwt id="devMpJwt" jwksUri="${jwt.jwksUri}" issuer="${jwt.issuer}" audiences="${jwt.audiences}"
+           userNameAttribute="${jwt.userNameAttribute}"/>
+
+</server>
+
+
+mvn clean liberty:run   OR   mvn clean liberty:dev
