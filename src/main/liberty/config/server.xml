@@ -38,6 +38,3 @@
            userNameAttribute="${jwt.userNameAttribute}"/>
 
 </server>
-
-
-mvn clean liberty:run   OR   mvn clean liberty:dev
