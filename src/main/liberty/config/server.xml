@@ -17,6 +17,9 @@
 
     <webApplication location="${project.name}.war" contextRoot="/">
         <classloader apiTypeVisibility="+third-party" />
+        <!--<appProperties>
+            <property name="property.location" value="web-application-app-property"/>
+        </appProperties>-->
     </webApplication>
 
     <managedExecutorService jndiName="concurrent/execSvc"/>
@@ -36,5 +39,5 @@
 
     <mpJwt id="devMpJwt" jwksUri="${jwt.jwksUri}" issuer="${jwt.issuer}" audiences="${jwt.audiences}"
            userNameAttribute="${jwt.userNameAttribute}"/>
-
+<!--    <variable name="property.location" value="server-xml"/>-->
 </server>

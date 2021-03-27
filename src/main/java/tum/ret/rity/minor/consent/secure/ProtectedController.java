@@ -1,8 +1,10 @@
 package tum.ret.rity.minor.consent.secure;
 
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.annotation.Counted;
-import org.eclipse.microprofile.metrics.annotation.Gauge;
 import org.eclipse.microprofile.metrics.annotation.Metered;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -20,6 +22,7 @@ import tum.ret.rity.minor.consent.representation.Error;
 import tum.ret.rity.minor.consent.representation.User;
 
 import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
@@ -61,6 +64,10 @@ public class ProtectedController {
         return new User("I am accessible too");
     }
 
+    @Inject
+    @ConfigProperty(name = "property.location", defaultValue = "config_property_annotation")
+    private String propertyLocation;
+
     @GET
     @ScopesAllowed({"consent-admin"})
     @Counted(name = "getJWTBasedValueInvocationCount", absolute = true, reusable = true, tags = {"tag1=value1"})
@@ -68,6 +75,7 @@ public class ProtectedController {
             unit = MetricUnits.MICROSECONDS)
     @Metered(name = "getJWTBasedValue_metered", description = "Number of invocations of the getJWTBasedValue resource")
     public String getJWTBasedValue() {
-        return "I am accessible";
+        return "I am accessible: "
+                + propertyLocation;
     }
 }
