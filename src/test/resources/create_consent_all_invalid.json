@@ -1,0 +1,13 @@
+{
+  "guardian": {
+    "identifier_type": "IDSA",
+    "identifier_value": "333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333",
+    "identifier_issuing_country": "ZAT"
+  },
+  "minor": {
+    "identifier_type": "ID",
+    "identifier_value": "J6025325",
+    "identifier_issuing_country": "ZA"
+  },
+  "birth_date": "1903-08-05444"
+}

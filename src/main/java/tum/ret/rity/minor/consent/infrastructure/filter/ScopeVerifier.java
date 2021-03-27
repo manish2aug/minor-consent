@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.jwt.Claim;
 import org.eclipse.microprofile.jwt.ClaimValue;
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import tum.ret.rity.minor.consent.infrastructure.ScopesAllowed;
+import tum.ret.rity.minor.consent.infrastructure.annotation.ScopesAllowed;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;

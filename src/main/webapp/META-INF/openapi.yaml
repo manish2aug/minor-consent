@@ -1,0 +1,348 @@
+---
+openapi: 3.0.2
+info:
+  title: Minor Consent API
+  version: 1.0.0
+  description: |-
+    The consent API serves information about recorded parent/guardian to minor link, based on which digital platforms do or don't allow minor users to accept terms and conditions.
+    The effect of this extends to the overall use of the platform as well.
+    <br><br><b><u><font color="blue" size="2">Minor is a person having age less than 18 years</font></u></b>
+  termsOfService: http://swagger.io/terms/
+  contact:
+    name: Manish Kumar
+    email: manish2aug@gmail.com
+servers:
+  - url: https://localhost:9082/minor-consent/api
+    description: Local server
+paths:
+  /consents:
+    get:
+      operationId: getConsentByMinor
+      parameters:
+        - name: identifier_type
+          description: type of the "identifier_value" of the minor
+          schema:
+            enum:
+              - ID
+              - PASSPORT
+            type: string
+          in: query
+          required: true
+        - name: identifier_value
+          description: ID\PASSPORT number of the minor
+          schema:
+            type: string
+          in: query
+          required: true
+        - name: identifier_issuing_country
+          description: Issuing country for the given identifier for the minor (2-letter ISO country code).
+          schema:
+            type: string
+          in: query
+          required: true
+      responses:
+        "200":
+          description: Consent entry found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentReadRepresentation'
+        "400":
+          description: Validation failure caused by invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Not authentication - either invalid\missing token or missing scope claim
+        "403":
+          description: Not authorized - token is missing the required scope or missing required scope in "scope" claim
+        "404":
+          description: No consent found in the system based on supplied minor data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - api-sec:
+            - consent
+      summary: Retrieve recorded consent for a given minor
+      description: |-
+        <font color="purple"><b><u>Business rules</b></u></font><br>
+        <b>
+          <ol>
+            <li>Allowed scopes are "consent" & "consent-admin"</li>
+            <li>With "consent-admin" scope, anyone would be be able to retrieve the anyone's consent</li>
+            <li>With "consent" scope, only the person who granted the consent originally, would be able to retrieve the same</li>
+          </ol>
+        </b>
+    post:
+      operationId: createMinorConsent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Consent"
+        required: true
+      responses:
+        "201":
+          description: Consent successfully created
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+              description: resource location of added consent
+          # -----------------------------------------------------
+          # Links
+          # -----------------------------------------------------
+          # links:
+          #   GetConsentByMinor:   # <---- arbitrary name for the link
+          #     operationId: getConsentByMinor
+          #     parameters:
+          #       userId: '$responses.headers.Location'
+          #     description: >
+          #       The `id` value returned in the response can be used as
+          #       the `userId` parameter in `GET /users/{userId}`.
+          # -----------------------------------------------------
+        "400":
+          description: Validation failure caused by invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Not authentication - either invalid\missing token or missing scope claim
+        "403":
+          description: Not authorized - token is missing the required scope or missing required scope in "scope" claim
+        "409":
+          description: Consent already exists for the minor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - api-sec:
+            - consent
+      description: |-
+        <font color="purple"><b><u>Business rules</b></u></font><br>
+        <b>
+          <ol>
+            <li>Allowed scopes are "consent" & "consent-admin"</li>
+            <li>With "consent-admin" scope, anyone would be be able to grant consent from any guardian to any minor</li>
+            <li>With "consent" scope, anyone can only grant <font color="red" size=3>his</font> own consent to any minor</li>
+            <li>With "consent" scope, the guardian's data must match against claims in token</li>
+            <li>The calculated age as per the given birth_date in payload on present day should be < 18 </li>
+          </ol>
+        </b>
+    delete:
+      operationId: deleteMinorConsent
+      parameters:
+        - name: identifier_type
+          description: type of the "identifier_value" of the minor
+          schema:
+            enum:
+              - ID
+              - PASSPORT
+            type: string
+          in: query
+          required: true
+        - name: identifier_value
+          description: ID\PASSPORT number of the minor
+          schema:
+            type: string
+          in: query
+          required: true
+        - name: identifier_issuing_country
+          description: Issuing country for the given identifier for the minor (2-letter ISO country code).
+          schema:
+            type: string
+          in: query
+          required: true
+      responses:
+        "204":
+          description: Consent successfully removed
+        "400":
+          description: Validation failure caused by invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Not authentication - either invalid\missing token or missing scope claim
+        "403":
+          description: Not authorized - token is missing the required scope or missing required scope in "scope" claim
+        "404":
+          description: No consent found in the system based on supplied minor data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - api-sec:
+            - consent
+      summary: Revoke a consent issued to a given minor
+      description: |-
+        <font color="purple"><b><u>Business rules</b></u></font><br>
+        <b>
+          <ol>
+            <li>Allowed scopes are "consent" & "consent-admin"</li>
+            <li>With "consent-admin" scope, anyone would be be able to remove any minor's consent</li>
+            <li>With "consent" scope, only <font color="red" size=3>consent-granter</font> would be able to remove the consent</li>
+          </ol>
+        </b>
+  /consents/reports:
+    get:
+      operationId: getConsentReport
+      summary: Retrieves all recorded consents where consent's applicable date matches the supplied search criteria
+      parameters:
+        - name: from_date
+          description: A date from which consent_applicable_date of recorded consent, should be greater than or equals to in order to be included in search output.
+          schema:
+            format: date
+            type: string
+          in: query
+          required: true
+        - name: to_date
+          description: A date from which consent_applicable_date of a recorded consent, should be less than or equals to in order to be included in search output.
+            too.
+          schema:
+            format: date
+            type: string
+          in: query
+          required: true
+        - name: include_withdrawn
+          in: query
+          required: false
+          description: Option parameter for including withdrawn consents in extracted report
+          schema:
+            enum:
+              - "true"
+              - "false"
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConsentReadRepresentation'
+          description: If operation successfully completes, it retrieves the list of consents or an empty list if no consent found
+        "400":
+          description: Validation failure caused by invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Not authentication - either invalid\missing token or missing scope claim
+        "403":
+          description: Not authorized - token is missing the required scope or missing required scope in "scope" claim
+      security:
+        - api-sec:
+            - consent-admin
+      description: |-
+        <font color="purple"><b><u>Business rules</b></u></font><br>
+        <b>
+          <ol>
+            <li>The only allowed scopes is "consent-admin"</li>
+          </ol>
+        </b>
+components:
+  schemas:
+    Identification:
+      description: A qualified ID for a person
+      required:
+        - identifier_type
+        - identifier_value
+        - identifier_issuing_country
+      type: object
+      properties:
+        identifier_type:
+          description: type of the identifier
+          enum:
+            - ID
+            - PASSPORT
+          type: string
+          maxLength: 50
+          minLength: 1
+        identifier_value:
+          description: value of the identifier
+          type: string
+        identifier_issuing_country:
+          description: alpha-2 ISO country code of the country from where the identifier was issued
+            code.
+          type: string
+      example:
+        identifier_type: ID
+        identifier_value: "0000000000000"
+        identifier_issuing_country: ZA
+    Consent:
+      description: A consent record
+      required:
+        - guardian
+        - minor
+      type: object
+      properties:
+        consent_applicable_date:
+          format: date
+          description: Optional - date from the consent would be applicable, if not provided the current date would be as the consent_applicable_date
+          type: string
+          pattern: yyyy-MM-dd
+        guardian:
+          $ref: '#/components/schemas/Identification'
+        minor:
+          $ref: '#/components/schemas/Identification'
+        birth_date:
+          format: date
+          description: Optional - date of birth of the minor, if not provided but minor's ID number provided, system would derive it from ID number. If both provided then it should be in compliance with ID number. It is mandatory if minor identifier type is PASSPORT
+          type: string
+          pattern: yyyy-MM-dd
+        originating_system:
+          description: Optional - System/platform through which consent was granted, if not provided, the client would be used from the supplied token. If token has azp & preferred_username then system would use preferred_username@azp as originating system
+          type: string
+    ConsentReadRepresentation:
+      description: A consent record
+      allOf:
+        - $ref: '#/components/schemas/Consent'
+        - type: object
+          properties:
+            consent_request_date:
+              format: date-time
+              description: Date on which the consent was created
+              type: string
+              pattern: yyyy-MM-ddTHH:mm:sss
+            consent_withdrawn_date:
+              format: date-time
+              description: Date on which the consent was withdrawn if exists
+              type: string
+              pattern: yyyy-MM-ddTHH:mm:sss
+    Error:
+      description: "Error representation"
+      type: object
+      properties:
+        referenceNumber:
+          description: type of the identifier
+          type: string
+        error_msg:
+          type: array
+          items:
+            type: string
+      example:
+        error_msg: [ "validation failed" ]
+        referenceNumber: 46540a60-43f1-4ad3-8cc6-c9c789366df2
+  securitySchemes:
+    api-sec:
+      flows:
+        clientCredentials:
+          tokenUrl: https://localhost:8443/auth/realms/test/protocol/openid-connect/token
+          scopes:
+            consent: Allows users to retrieve, add or delete the consent of a minor
+            consent-admin: Allows users to perform all operations
+      type: oauth2
+      description: OAuth-based authentication for user and clients
+security:
+  - api-sec:
+      - consent-admin
+      - consent

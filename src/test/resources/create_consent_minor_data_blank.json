@@ -1,0 +1,13 @@
+{
+  "guardian": {
+    "identifier_type": "PASSPORT",
+    "identifier_value": "P2023P20",
+    "identifier_issuing_country": "ZA"
+  },
+  "minor": {
+    "identifier_type": "",
+    "identifier_value": "",
+    "identifier_issuing_country": ""
+  },
+  "birth_date": "2003-08-05"
+}

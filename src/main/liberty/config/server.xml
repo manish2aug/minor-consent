@@ -30,7 +30,7 @@
     </library>
     <dataSource id="consentDS" jndiName="jdbc/consentApiDs">
         <jdbcDriver libraryRef="DB2JCC4Lib"/>
-        <properties.postgresql databaseName="mrt_consent" serverName="localhost" portNumber="5432" user="postgres"
+        <properties.postgresql databaseName="MRT_CONSENT" serverName="localhost" portNumber="5432" user="postgres"
                                password="password"/>
     </dataSource>
 
