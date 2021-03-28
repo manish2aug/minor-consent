@@ -1,0 +1,33 @@
+version: '3.1'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: MRT_CONSENT
+      POSTGRES_PASSWORD: password
+    volumes:
+      - database-data:/var/lib/postgresql/data/
+      - ./src/main/resources:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    restart: always
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8081:8080
+
+volumes:
+  database-data:
